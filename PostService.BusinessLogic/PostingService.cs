@@ -17,21 +17,29 @@ public class PostingService : IPostingService
     {
         newPosting.CreatedAt = DateTime.UtcNow;
 
-        float baseRate = newPosting.DeliveryType switch
-        {
-            DeliveryType.Department => 40f,
-            DeliveryType.Courier => 80f,
-            DeliveryType.ExpressCourier => 120f,
-            _ => 40f
-        };
+        float baseRate;
+        float perKgRate;
 
-        float perKgRate = newPosting.DeliveryType switch
+        if (newPosting.DeliveryType == DeliveryType.Department)
         {
-            DeliveryType.Department => 10f,
-            DeliveryType.Courier => 15f,
-            DeliveryType.ExpressCourier => 24f,
-            _ => 10f
-        };
+            baseRate = 40f;
+            perKgRate = 10f;
+        }
+        else if (newPosting.DeliveryType == DeliveryType.Courier)
+        {
+            baseRate = 80f;
+            perKgRate = 15f;
+        }
+        else if (newPosting.DeliveryType == DeliveryType.ExpressCourier)
+        {
+            baseRate = 120f;
+            perKgRate = 24f;
+        }
+        else
+        {
+            baseRate = 40f;
+            perKgRate = 10f;
+        }
 
         newPosting.Price = baseRate + (newPosting.Weight * perKgRate);
 

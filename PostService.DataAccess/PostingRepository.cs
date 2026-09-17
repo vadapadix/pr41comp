@@ -27,7 +27,7 @@ public class PostingRepository : IPostingRepository
                 Width REAL NOT NULL,
                 Height REAL NOT NULL,
                 Depth REAL NOT NULL,
-                [Value] REAL NOT NULL,
+                [Value] REAL NULL,
                 [Price] REAL NOT NULL,
                 [CreatedAt] INTEGER NOT NULL
             );";
@@ -78,7 +78,7 @@ public class PostingRepository : IPostingRepository
                 Width = reader.GetFloat(widthIndex),
                 Height = reader.GetFloat(heightIndex),
                 Depth = reader.GetFloat(depthIndex),
-                Value = reader.GetFloat(valueIndex),
+                Value = reader.IsDBNull(valueIndex) ? null : reader.GetFloat(valueIndex),
                 Price = reader.GetFloat(priceIndex),
                 CreatedAt = DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64(createdAtIndex)).UtcDateTime
             };
@@ -121,7 +121,7 @@ public class PostingRepository : IPostingRepository
             Width = reader.GetFloat(reader.GetOrdinal("Width")),
             Height = reader.GetFloat(reader.GetOrdinal("Height")),
             Depth = reader.GetFloat(reader.GetOrdinal("Depth")),
-            Value = reader.GetFloat(reader.GetOrdinal("Value")),
+            Value = reader.IsDBNull(reader.GetOrdinal("Value")) ? null : reader.GetFloat(reader.GetOrdinal("Value")),
             Price = reader.GetFloat(reader.GetOrdinal("Price")),
             CreatedAt = DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64(reader.GetOrdinal("CreatedAt"))).UtcDateTime
         };
@@ -151,7 +151,7 @@ public class PostingRepository : IPostingRepository
         cmd.Parameters.AddWithValue("@Width", posting.Width);
         cmd.Parameters.AddWithValue("@Height", posting.Height);
         cmd.Parameters.AddWithValue("@Depth", posting.Depth);
-        cmd.Parameters.AddWithValue("@Value", posting.Value);
+        cmd.Parameters.AddWithValue("@Value", posting.Value ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@Price", posting.Price);
         cmd.Parameters.AddWithValue("@CreatedAt", new DateTimeOffset(posting.CreatedAt).ToUnixTimeSeconds());
 
@@ -189,7 +189,7 @@ public class PostingRepository : IPostingRepository
         cmd.Parameters.AddWithValue("@Width", posting.Width);
         cmd.Parameters.AddWithValue("@Height", posting.Height);
         cmd.Parameters.AddWithValue("@Depth", posting.Depth);
-        cmd.Parameters.AddWithValue("@Value", posting.Value);
+        cmd.Parameters.AddWithValue("@Value", posting.Value ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@Price", posting.Price);
 
         return cmd.ExecuteNonQuery();
