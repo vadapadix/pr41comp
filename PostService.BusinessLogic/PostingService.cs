@@ -1,40 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using PostService.Models;
 using PostService.CommonTypes;
+using PostService.DataAccess;
+using PostService.Models;
+
 namespace PostService.BusinessLogic;
 
 public class PostingService : IPostingService
 {
-    private static readonly List<Posting> _postings = new()
+    private readonly IPostingRepository _repository;
+
+    public PostingService(IPostingRepository repository)
     {
-        new Posting
-        {
-            Id = 1,
-            From = "Alice",
-            To = "Bob",
-            Content = "Books",
-            DeliveryType = DeliveryType.Courier,
-            Weight = 2.5f,
-            Width = 30,
-            Height = 20,
-            Depth = 10,
-            Value = 50.0f,
-            Price = 117.5f,
-            CreatedAt = DateTime.UtcNow
-        }
-    };
+        _repository = repository;
+    }
 
     public Posting Create(Posting newPosting)
     {
-        var maxId = 1;
-        if (_postings.Count > 0)
-        {
-            maxId = _postings.Max(p => p.Id) + 1;
-        }
-        newPosting.Id = maxId;
-
         newPosting.CreatedAt = DateTime.UtcNow;
 
         float baseRate = newPosting.DeliveryType switch
@@ -55,51 +35,27 @@ public class PostingService : IPostingService
 
         newPosting.Price = baseRate + (newPosting.Weight * perKgRate);
 
-        _postings.Add(newPosting);
+        var id = _repository.Create(newPosting);
+        newPosting.Id = id;
         return newPosting;
     }
 
-    public List<Posting> GetAll()
-    {
-        return _postings;
-    }
+    public List<Posting> GetAll() => _repository.GetList();
 
-    public Posting? Find(int postingId)
-    {
-        return _postings.FirstOrDefault(p => p.Id == postingId);
-    }
+    public Posting? Find(int postingId) => _repository.GetById(postingId);
 
     public Posting? Update(Posting posting)
     {
-        var existing = _postings.FirstOrDefault(p => p.Id == posting.Id);
+        var existing = _repository.GetById(posting.Id);
         if (existing is null)
         {
             return null;
         }
 
-        existing.From = posting.From;
-        existing.To = posting.To;
-        existing.Content = posting.Content;
-        existing.DeliveryType = posting.DeliveryType;
-        existing.Weight = posting.Weight;
-        existing.Width = posting.Width;
-        existing.Height = posting.Height;
-        existing.Depth = posting.Depth;
-        existing.Value = posting.Value;
-        existing.Price = posting.Price;
-
-        return existing;
+        posting.CreatedAt = existing.CreatedAt;
+        var rowsAffected = _repository.Update(posting);
+        return rowsAffected > 0 ? posting : null;
     }
 
-    public int Delete(int postingId)
-    {
-        var posting = _postings.FirstOrDefault(p => p.Id == postingId);
-        if (posting is null)
-        {
-            return 0;
-        }
-
-        _postings.Remove(posting);
-        return 1;
-    }
+    public int Delete(int postingId) => _repository.Delete(postingId);
 }

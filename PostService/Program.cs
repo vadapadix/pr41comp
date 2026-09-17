@@ -1,12 +1,17 @@
 using PostService.Dtos;
 using PostService.Mappings;
 using PostService.BusinessLogic;
-
+using PostService.DataAccess;
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddScoped<IPostingRepository, PostingRepository>();
 builder.Services.AddScoped<IPostingService, PostingService>();
-
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var repository = scope.ServiceProvider.GetRequiredService<IPostingRepository>();
+    repository.CreateDb();
+}
 
 app.MapGet("/", () => "Це API поштового клієнта");
 

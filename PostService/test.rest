@@ -23,7 +23,7 @@ Content-Type: application/json
   "from": "Ivan",
   "to": "Olena",
   "content": "Documents",
-  "deliveryType": "Department",
+  "deliveryType": 0,
   "weight": 0.5,
   "width": 20,
   "height": 15,
@@ -40,10 +40,11 @@ PUT http://localhost:5028/postings/1
 Content-Type: application/json
 
 {
+  "id": 1,
   "from": "Ivan",
   "to": "Olena",
   "content": "Documents (updated)",
-  "deliveryType": "Courier",
+  "deliveryType": 1,
   "weight": 0.6,
   "width": 20,
   "height": 15,
