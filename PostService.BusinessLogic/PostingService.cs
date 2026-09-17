@@ -48,9 +48,15 @@ public class PostingService : IPostingService
         return newPosting;
     }
 
-    public List<Posting> GetAll() => _repository.GetList();
+    public List<Posting> GetAll()
+    {
+        return _repository.GetList();
+    }
 
-    public Posting? Find(int postingId) => _repository.GetById(postingId);
+    public Posting? Find(int postingId)
+    {
+        return _repository.GetById(postingId);
+    }
 
     public Posting? Update(Posting posting)
     {
@@ -62,8 +68,16 @@ public class PostingService : IPostingService
 
         posting.CreatedAt = existing.CreatedAt;
         var rowsAffected = _repository.Update(posting);
-        return rowsAffected > 0 ? posting : null;
+        if (rowsAffected > 0)
+        {
+            return posting;
+        }
+
+        return null;
     }
 
-    public int Delete(int postingId) => _repository.Delete(postingId);
+    public int Delete(int postingId)
+    {
+        return _repository.Delete(postingId);
+    }
 }

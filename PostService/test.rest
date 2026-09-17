@@ -1,11 +1,3 @@
-### Get all postings
-
-GET http://localhost:5028/postings
-### Get posting by id
-GET http://localhost:5028/postings/1
-### Get posting by non-existing id
-GET http://localhost:5028/postings/999
-
 ### Get all postings (Отримання початкового списку)
 GET http://localhost:5028/postings
 

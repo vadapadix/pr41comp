@@ -10,8 +10,12 @@ public class PostingRepository : IPostingRepository
 {
     private const string ConnectionString = "Data Source=PostingDb.db;";
 
-    // Метод міграції: створює таблицю, якщо її ще немає
     public void CreateDb()
+    {
+        CreatePostingTable();
+    }
+
+    private void CreatePostingTable()
     {
         using var conn = new SqliteConnection(ConnectionString);
         conn.Open();
@@ -36,7 +40,6 @@ public class PostingRepository : IPostingRepository
         cmd.ExecuteNonQuery();
     }
 
-    // Отримання всіх записів
     public List<Posting> GetList()
     {
         var resultList = new List<Posting>();
@@ -89,7 +92,6 @@ public class PostingRepository : IPostingRepository
         return resultList;
     }
 
-    // Отримання одного запису за Id
     public Posting? GetById(int postingId)
     {
         using var conn = new SqliteConnection(ConnectionString);
@@ -110,24 +112,38 @@ public class PostingRepository : IPostingRepository
             return null;
         }
 
-        return new Posting
+        var idIndex = reader.GetOrdinal("Id");
+        var fromIndex = reader.GetOrdinal("From");
+        var toIndex = reader.GetOrdinal("To");
+        var contentIndex = reader.GetOrdinal("Content");
+        var deliveryTypeIndex = reader.GetOrdinal("DeliveryType");
+        var weightIndex = reader.GetOrdinal("Weight");
+        var widthIndex = reader.GetOrdinal("Width");
+        var heightIndex = reader.GetOrdinal("Height");
+        var depthIndex = reader.GetOrdinal("Depth");
+        var valueIndex = reader.GetOrdinal("Value");
+        var priceIndex = reader.GetOrdinal("Price");
+        var createdAtIndex = reader.GetOrdinal("CreatedAt");
+
+        var posting = new Posting
         {
-            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-            From = reader.GetString(reader.GetOrdinal("From")),
-            To = reader.GetString(reader.GetOrdinal("To")),
-            Content = reader.GetString(reader.GetOrdinal("Content")),
-            DeliveryType = (DeliveryType)reader.GetInt32(reader.GetOrdinal("DeliveryType")),
-            Weight = reader.GetFloat(reader.GetOrdinal("Weight")),
-            Width = reader.GetFloat(reader.GetOrdinal("Width")),
-            Height = reader.GetFloat(reader.GetOrdinal("Height")),
-            Depth = reader.GetFloat(reader.GetOrdinal("Depth")),
-            Value = reader.IsDBNull(reader.GetOrdinal("Value")) ? null : reader.GetFloat(reader.GetOrdinal("Value")),
-            Price = reader.GetFloat(reader.GetOrdinal("Price")),
-            CreatedAt = DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64(reader.GetOrdinal("CreatedAt"))).UtcDateTime
+            Id = reader.GetInt32(idIndex),
+            From = reader.GetString(fromIndex),
+            To = reader.GetString(toIndex),
+            Content = reader.GetString(contentIndex),
+            DeliveryType = (DeliveryType)reader.GetInt32(deliveryTypeIndex),
+            Weight = reader.GetFloat(weightIndex),
+            Width = reader.GetFloat(widthIndex),
+            Height = reader.GetFloat(heightIndex),
+            Depth = reader.GetFloat(depthIndex),
+            Value = reader.IsDBNull(valueIndex) ? null : reader.GetFloat(valueIndex),
+            Price = reader.GetFloat(priceIndex),
+            CreatedAt = DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64(createdAtIndex)).UtcDateTime
         };
+
+        return posting;
     }
 
-    // Створення запису та повернення згенерованого Id
     public int Create(Posting posting)
     {
         using var conn = new SqliteConnection(ConnectionString);
@@ -159,7 +175,6 @@ public class PostingRepository : IPostingRepository
         return generatedId;
     }
 
-    // Оновлення наявного запису
     public int Update(Posting posting)
     {
         using var conn = new SqliteConnection(ConnectionString);
@@ -192,10 +207,10 @@ public class PostingRepository : IPostingRepository
         cmd.Parameters.AddWithValue("@Value", posting.Value ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@Price", posting.Price);
 
-        return cmd.ExecuteNonQuery();
+        var rowsAffected = cmd.ExecuteNonQuery();
+        return rowsAffected;
     }
 
-    // Видалення запису (повертає к-сть видалених рядків: 1 або 0)
     public int Delete(int postingId)
     {
         using var conn = new SqliteConnection(ConnectionString);
@@ -205,6 +220,7 @@ public class PostingRepository : IPostingRepository
         using var cmd = new SqliteCommand(sqlText, conn);
         cmd.Parameters.AddWithValue("@PostingId", postingId);
 
-        return cmd.ExecuteNonQuery();
+        var numberOfDeletedRecords = cmd.ExecuteNonQuery();
+        return numberOfDeletedRecords;
     }
 }

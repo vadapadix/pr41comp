@@ -2,11 +2,14 @@ using PostService.Dtos;
 using PostService.Mappings;
 using PostService.BusinessLogic;
 using PostService.DataAccess;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IPostingRepository, PostingRepository>();
 builder.Services.AddScoped<IPostingService, PostingService>();
+
 var app = builder.Build();
+
 using (var scope = app.Services.CreateScope())
 {
     var repository = scope.ServiceProvider.GetRequiredService<IPostingRepository>();
@@ -18,7 +21,11 @@ app.MapGet("/", () => "Це API поштового клієнта");
 app.MapGet("/postings", (IPostingService postingService) =>
 {
     var postings = postingService.GetAll();
-    var resultDtos = postings.Select(PostingMapper.ToPostingGetDto);
+    var resultDtos = new List<PostingGetDto>();
+    foreach (var posting in postings)
+    {
+        resultDtos.Add(PostingMapper.ToPostingGetDto(posting));
+    }
     return Results.Ok(resultDtos);
 });
 
